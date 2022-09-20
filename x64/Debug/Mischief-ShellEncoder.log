@@ -1,0 +1,3 @@
+﻿  main.cpp
+C:\Users\Mitchell\source\repos\Mischief-ShellEncoder\main.cpp(113,10): warning C4101: 'remoteThread': unreferenced local variable
+  Mischief-ShellEncoder.vcxproj -> C:\Users\Mitchell\source\repos\Mischief-ShellEncoder\x64\Debug\Mischief-ShellEncoder.exe
