@@ -35,9 +35,13 @@
 	............    ....................................................   .........
  
  Automated shellcode encoder for AV bypass and execution. 
+ 
+ usage: main.py [-h] --payload path2payload --out OutputPath [--method method]
+               [--verbose verbose]
 
 TODO: 
-Usage document
+Finsihed writing to template
+Execution methods
 Automated compilation. 
  
  
