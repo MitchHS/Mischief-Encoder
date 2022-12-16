@@ -313,8 +313,12 @@ if __name__ == "__main__":
 		set_verbose()
 
 	if args.method is None or args.method == "call":
-		mod_template = generate("C:\\Users\\Mitchell\\source\\repos\\Mischief\\Mischief-Encoder\\payload.bin","C:\\Users\\Mitchell\\source\\repos\\Mischief\\Mischief-Encoder\\main.cpp")
-		write_template(mod_template, "C:\\Users\\Mitchell\\source\\repos\\Mischief\\Mischief-Encoder\\test.cpp")
+		mod_template = generate("payload.bin","main.cpp")
+		out_file = args.out 
+		if not args.out:
+			raise Exception("Specify a --out filename")
+		else:
+			write_template(mod_template, "C:\\Users\\Mitchell\\source\\repos\\Mischief\\Mischief-Encoder\\test.cpp")
 
 
 
