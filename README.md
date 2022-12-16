@@ -39,9 +39,14 @@
  usage: main.py [-h] --payload path2payload --out OutputPath [--method method]
                [--verbose verbose]
 
+python3 main.y --payload path2payload --out outFile 
+
 TODO: 
-Finsihed writing to template
-Execution methods
-Automated compilation. 
+
+Automated MinGW compilation, currently doesn't work with static libraries for some reason. 
+Compiles but breaks shellcode for some reason.
+
+
+
  
  
