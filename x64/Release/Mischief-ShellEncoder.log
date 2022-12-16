@@ -1,4 +1,0 @@
-﻿  main.cpp
-C:\Users\Mitchell\source\repos\Mischief-ShellEncoder\main.cpp(113,10): warning C4101: 'remoteThread': unreferenced local variable
-  LINK : /LTCG specified but no code generation required; remove /LTCG from the link command line to improve linker performance
-  Mischief-ShellEncoder.vcxproj -> C:\Users\Mitchell\source\repos\Mischief-ShellEncoder\x64\Release\Mischief-ShellEncoder.exe
